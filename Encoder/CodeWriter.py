@@ -34,6 +34,8 @@ class CodeWriter:
         
         #print(treeBitsDictionary)
         encodedWord = self.encodedData.getEncodedWord()
+        print(len(encodedWord))
+        print(len(treeBitsDictionary))
         
         
         treeRulesPlusEncodedWord = bitarray()
@@ -43,6 +45,10 @@ class CodeWriter:
         treeRulesPlusEncodedWordBytes = self.__addBitsToCompleteLastByte(treeRulesPlusEncodedWord)
         trashAndSuffixBitsLengthByte = self.__getTrashAndSuffixBitsLengthByte(len(treeRulesPlusEncodedWord), len(suffixBits))
         
+        firstLettersUnit = self.encodingRules.getFirstLettersUnit()
+        firstLettersUnitBytes = firstLettersUnit.tobytes()
+        print(firstLettersUnit)
+        
         f = open(fileName, 'wb')
         f.write(trashAndSuffixBitsLengthByte)
         f.write(letterLengthByte)
@@ -50,15 +56,33 @@ class CodeWriter:
         f.write(suffixBitsBytes)
         f.write(bytesForUniqueLetterUnitsByte)
         f.write(uniqueLetterUnitsBytes)
+        
+        f.write(firstLettersUnitBytes)
         f.write(treeRulesPlusEncodedWordBytes)
         f.close()
 
     def __convertToSuitableFormat(self, treeBitsDictionary):
+        letterLength = self.encodingRules.getLetterLength()
+        unitLength = self.encodingRules.getUnitLength()
         wholeStretch = bitarray()
+        aaa = 0
         for item in treeBitsDictionary.items():
+            if len(item[1]) == 2 + letterLength * unitLength:
+                #print('HEREEEEEEEEEEEEEEEEE')
+                #print(item[1])
+                del (item[1])[0]
+                #print(item[1])
+            '''
+            if aaa >= 0 and aaa <10:
+                print('this---------------------------------------------------------------')
+                print(item[0])
+                print(item[1])
+                print(len(item[1]))
+            '''
             currentStretch = bitarray(item[0])
             currentStretch.extend(item[1])
             wholeStretch.extend(currentStretch)
+            aaa += 1
         return wholeStretch
         
     def __getTrashAndSuffixBitsLengthByte(self, encodedWordLength, suffixBitsLength):

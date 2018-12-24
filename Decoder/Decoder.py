@@ -6,6 +6,8 @@ class Decoder:
         self.encodedWord = encodedData.getEncodedWord()
         self.suffixBits = encodedData.getSuffixBits()
         self.decodingDictionary = rulesFromEncoder.getDecodingDictionary()
+        self.decodingRules = rulesFromEncoder
+        #self.currentDecodedLettersUnit = rulesFromEncoder.getFirstLettersUnit()
 
     def decode(self):
         decodedWord = self.__decodeWord()
@@ -18,21 +20,27 @@ class Decoder:
             return decodedWord + self.suffixBits
         else:
             return decodedWord
-
     def __decodeWord(self):
-        str = bitarray()
-        i = 0
+        encodedWord = self.encodedWord
+        dictionaryOfDictionaries = self.decodingDictionary
+        decodedWord = bitarray()
+        currentDecodedLettersUnit = self.decodingRules.getFirstLettersUnit()
+        encodedWord = encodedWord[1:]
+        decodedWord.extend(currentDecodedLettersUnit)
         temp = bitarray()
-        while i < len(self.encodedWord):
-            temp.append(self.encodedWord[i])
-            if self.__isEncodedLetter(temp):
-                str.extend(self.decodingDictionary[temp.to01()])
+        i = 0
+        while i < len(encodedWord):
+            currentDictionary = dictionaryOfDictionaries[currentDecodedLettersUnit.to01()]
+            temp.append(encodedWord[i])
+            if self.__isEncodedLetter(currentDictionary, temp):
+                currentDecodedLettersUnit = currentDictionary[temp.to01()]
+                decodedWord.extend(currentDecodedLettersUnit)
                 temp = bitarray()
             i += 1
-        return str
+        return decodedWord
 
-    def __isEncodedLetter(self, temp):
-        if temp.to01() in self.decodingDictionary:
+    def __isEncodedLetter(self, currentDictionary, temp):
+        if temp.to01() in currentDictionary:
             return True
         return False
 

@@ -112,7 +112,8 @@ class Coder:
 
             treeBitsDict[item[0]] = treeBits
             #print(treeBits)
-        encodingRules = EncodingRules(treeBitsDict, self.letterLength, self.unitLength, len(self.dictionaryOfDictionaries))
+            firstLettersUnit = self.word[:self.letterLength*self.unitLength]
+        encodingRules = EncodingRules(treeBitsDict, self.letterLength, self.unitLength, len(self.dictionaryOfDictionaries), firstLettersUnit)
         return encodingRules
 
     # pvz jei yra 11110a0b11....., tai treeBits - bitukai; symbols - a,b
