@@ -13,8 +13,9 @@ class CodeWriter:
         # Rasom medi
         # Rasom viska iki galo - uzkoduota zodi
         treeBitsDictionary = self.encodingRules.getTreeBits()
+        #------------------------------
         treeBitsToWrite = self.__convertToSuitableFormat(treeBitsDictionary)
-        #print(len(treeBitsToWrite))
+        #------------------------------
         
         suffixBits = self.encodedData.getSuffixBits()
         suffixBitsBytes = self.__getBytesFromNonFullBits(suffixBits)
@@ -30,24 +31,29 @@ class CodeWriter:
         
         bytesForUniqueLetterUnits = len(uniqueLetterUnitsBytes)
         bytesForUniqueLetterUnitsByte = self.__int_to_bytes(bytesForUniqueLetterUnits)
-        print(uniqueLetterUnits)
+        #print(uniqueLetterUnits)
         
         #print(treeBitsDictionary)
         encodedWord = self.encodedData.getEncodedWord()
-        print(len(encodedWord))
-        print(len(treeBitsDictionary))
+        #print(len(encodedWord))
+        #print(len(treeBitsDictionary))
         
         
         treeRulesPlusEncodedWord = bitarray()
         treeRulesPlusEncodedWord.extend(treeBitsToWrite)
         treeRulesPlusEncodedWord.extend(encodedWord)
-        #print(encodedWord[:25])
-        treeRulesPlusEncodedWordBytes = self.__addBitsToCompleteLastByte(treeRulesPlusEncodedWord)
-        trashAndSuffixBitsLengthByte = self.__getTrashAndSuffixBitsLengthByte(len(treeRulesPlusEncodedWord), len(suffixBits))
         
+        #print("encoded word")
+        print(len(encodedWord))
+        print(encodedWord[-70:])
+        #print('aa')
+        #print(len(treeRulesPlusEncodedWord))
+        trashAndSuffixBitsLengthByte = self.__getTrashAndSuffixBitsLengthByte(len(treeRulesPlusEncodedWord), len(suffixBits))
+        treeRulesPlusEncodedWordBytes = self.__addBitsToCompleteLastByte(treeRulesPlusEncodedWord)
+
         firstLettersUnit = self.encodingRules.getFirstLettersUnit()
         firstLettersUnitBytes = firstLettersUnit.tobytes()
-        print(firstLettersUnit)
+        #print(firstLettersUnit)
         
         f = open(fileName, 'wb')
         f.write(trashAndSuffixBitsLengthByte)
@@ -56,37 +62,22 @@ class CodeWriter:
         f.write(suffixBitsBytes)
         f.write(bytesForUniqueLetterUnitsByte)
         f.write(uniqueLetterUnitsBytes)
-        
         f.write(firstLettersUnitBytes)
         f.write(treeRulesPlusEncodedWordBytes)
         f.close()
-
+        #print(len(treeRulesPlusEncodedWordBytes))
     def __convertToSuitableFormat(self, treeBitsDictionary):
-        letterLength = self.encodingRules.getLetterLength()
-        unitLength = self.encodingRules.getUnitLength()
         wholeStretch = bitarray()
-        aaa = 0
         for item in treeBitsDictionary.items():
-            if len(item[1]) == 2 + letterLength * unitLength:
-                #print('HEREEEEEEEEEEEEEEEEE')
-                #print(item[1])
-                del (item[1])[0]
-                #print(item[1])
-            '''
-            if aaa >= 0 and aaa <10:
-                print('this---------------------------------------------------------------')
-                print(item[0])
-                print(item[1])
-                print(len(item[1]))
-            '''
             currentStretch = bitarray(item[0])
             currentStretch.extend(item[1])
             wholeStretch.extend(currentStretch)
-            aaa += 1
         return wholeStretch
         
     def __getTrashAndSuffixBitsLengthByte(self, encodedWordLength, suffixBitsLength):
         if encodedWordLength % 8 == 0:
+            print(encodedWordLength)
+            print('liekanaaaa')
             value1 = 0
         else:
             value1 = (8 - (encodedWordLength % 8)) << 5

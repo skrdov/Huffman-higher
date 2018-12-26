@@ -11,8 +11,6 @@ class Coder:
     def __init__(self, word, letterLength, unitLength):
         self.word = bitarray()
         self.word.frombytes(word)
-        print(len(self.word))
-        # print(self.word)
         self.letterLength = letterLength
         self.unitLength = unitLength
         self.lettersDictionary = {}
@@ -22,54 +20,57 @@ class Coder:
         if len(self.word) < 1:
             raise Exception('Ivesties failas negali buti mazesnis nei koduojamo zodzio ilgis')
             
-        #self.lettersDictionary = self.__getLettersDictionary()
+        #gaunam pvz:. {a:{a:00, b:01, ..}, b:{c:0}, c:{a:0, b:10, c:11000, ...}, ...}
         self.dictionaryOfDictionaries = self.__getEncodedLettersForDictionaryOfDictionaries()
+        print('diction')
+        print(len(self.dictionaryOfDictionaries))
 
     def __getEncodedLettersForDictionaryOfDictionaries(self):
-        dictionaryOfDictionaries = self.__getDictionaryOfDictionaries()
-        for key in dictionaryOfDictionaries:
-            uniqueSymbolsWithFreqs = dictionaryOfDictionaries[key]
-            dictionaryOfDictionaries[key] = self.__getLettersDictionary(uniqueSymbolsWithFreqs)
-        return dictionaryOfDictionaries
-    def __getDictionaryOfDictionaries(self):
-        uniqueLettersUnits = self.__getUniqueLetterUnitsInWordWithoutFreqs(self.word)
-        dictionaryOfDictionaries = self.__createDictionaryOfDictionaries(uniqueLettersUnits)
-        bitsToTake = self.letterLength * self.unitLength
-        i = 0
-        while i < len(self.word) - bitsToTake:
-            lettersUnit = self.word[i:i+bitsToTake]
-            letterDictionary = dictionaryOfDictionaries[lettersUnit.to01()]
-            nextLettersUnit = self.word[i+bitsToTake:i+2*bitsToTake]
-            if nextLettersUnit.to01() in letterDictionary:
-                letterDictionary[nextLettersUnit.to01()] += 1
-            else:
-                letterDictionary[nextLettersUnit.to01()] = 1
-            i += bitsToTake
+        #Gaunam pvz:. {a:{a:2kartai, b:5kartai, ..}, b:{c:100kartu}, c:{a:1kartas, b:3kartai, c:5kartai, ...}, ...}
+        dictionaryOfDictionaries = self.__getDictionaryOfDictionariesLettersFrequencies()
+        #Konvertuojam i listus, tam kad 
+        dictionaryOfLists = self.__convertToDictionaryOfLists(dictionaryOfDictionaries)
+        for key in dictionaryOfLists:
+            uniqueSymbolsWithFreqs = dictionaryOfLists[key]
+            #čia pasiemam konkrecias uzkodavimo taisykles, pvz:. dictionaryOfDictionaries['c'] = {a:0, b:10, c:11000, ...}
+            #Tiesiogiai nesusije su metodu apacioj, bet:
+            #Kai noresim uzkoduoti sekancia raide (einamuoju metu yra tarkim 'c' raide) darom dictionaryOfDictionaries['c'] ir gausim {a:0, b:10, c:11000, ...}
+            #Tada jei raide bus b, rasysim 10 ir tada pasiimsim dictionaryOfDictionaries['b'] ir koduosim kita raide pagal sita zodyna
+            dictionaryOfLists[key] = self.__getLettersDictionary(uniqueSymbolsWithFreqs)
+        return dictionaryOfLists
+        
+    def __convertToDictionaryOfLists(self, dictionaryOfDictionaries):
         for element in dictionaryOfDictionaries.items():
             listItems = self.__getListItem(element[1])
             dictionaryOfDictionaries[element[0]] = listItems
-        dictionaryOfDictionaries = self.__deleteEmptyValues(dictionaryOfDictionaries)
         return dictionaryOfDictionaries
-    def __deleteEmptyValues(self, dictionaryOfDictionaries):
-        keyToDelete = None
-        for key in dictionaryOfDictionaries.items():
-            if not key[1]:
-                keyToDelete = key[0]
-        if keyToDelete is not None:
-            del dictionaryOfDictionaries[keyToDelete]
+        
+    def __getDictionaryOfDictionariesLettersFrequencies(self):
+        uniqueLettersUnits = self.__getUniqueLetterUnitsInWord(self.word)
+        dictionaryOfDictionaries = {}
+        bitsToTake = self.letterLength * self.unitLength
+        i = 0
+        #pvz kai unit=2 imam ab, ziurim kokia sekanti pora (tarkim) ac, pagal tai pildom daznius
+        while i < len(self.word) - bitsToTake:
+            lettersUnit = self.word[i:i+bitsToTake]
+            if lettersUnit.to01() not in dictionaryOfDictionaries:
+                dictionaryOfDictionaries[lettersUnit.to01()] = {}
+            lettersDictionary = dictionaryOfDictionaries[lettersUnit.to01()]
+            nextLettersUnit = self.word[i+bitsToTake:i+2*bitsToTake]
+            if nextLettersUnit.to01() in lettersDictionary:
+                lettersDictionary[nextLettersUnit.to01()] += 1
+            else:
+                lettersDictionary[nextLettersUnit.to01()] = 1
+            i += bitsToTake
         return dictionaryOfDictionaries
+    
     def __getListItem(self, dict):
         list = []
         for key, value in dict.items():
             list.append([key, value])
         return list
-    def __createDictionaryOfDictionaries(self, uniqueLettersUnits):
-        dict = {}
-        for lettersUnit in uniqueLettersUnits:
-            dict[lettersUnit] = {}
-        return dict
         
-    def __getUniqueLetterUnitsInWordWithoutFreqs(self, word):
+    def __getUniqueLetterUnitsInWord(self, word):
         i = 0
         length = len(word)
         dict = {}
@@ -104,30 +105,22 @@ class Coder:
             listOfItems = []
             for elem in innerDict.items():
                 listOfItems.append(elem)
-            #print(listOfItems)
             rootsDictionary[item[0]] = self.__createTree(listOfItems)
-            #print(self.__getEncodingDecodingRules(rootsDictionary[item[0]]))
             treeBits = self.__getEncodingDecodingRules(rootsDictionary[item[0]])
-            #self.dictionaryOfDictionaries[item[0]] = treeBits
-
+            treeBits = self.__convertToSuitableFormat(treeBits)
+            #print(len(treeBits))
             treeBitsDict[item[0]] = treeBits
-            #print(treeBits)
             firstLettersUnit = self.word[:self.letterLength*self.unitLength]
         encodingRules = EncodingRules(treeBitsDict, self.letterLength, self.unitLength, len(self.dictionaryOfDictionaries), firstLettersUnit)
         return encodingRules
-
-    # pvz jei yra 11110a0b11....., tai treeBits - bitukai; symbols - a,b
-    def __separateTreeBitsAndLetters(self, treeStr):
-        bits = []
-        letters = []
-        for element in treeStr:
-            if isinstance(element, bool):
-                bits.append(element)
-            else:
-                letters.append(element)
-        return bitarray(bits), letters
-
-    # Gaunam taisykles. Pvz:. 1110a110b... -> a dekoduojama i 0001, b i
+        
+    def __convertToSuitableFormat(self, treeBits):
+        lettersUnitLength = self.letterLength * self.unitLength
+        if len(treeBits) == 2 + lettersUnitLength:
+            del treeBits[0]
+        return treeBits
+        
+    # Gaunam taisykles. Pvz:. 1110a110b... -> a dekoduojama i 000
     def __getEncodingDecodingRules(self, node):
         str = bitarray()
         if node.getLetter() == '':
@@ -144,9 +137,7 @@ class Coder:
 
     def __createTree(self, uniqueLetters):
         rootNode = Node('')
-        #uniqueCharsRepresentedInBits = self.__getUniqueLettersInWord()
         for letter in uniqueLetters:
-            # letter butu [raide, daznis]
             rootNode = self.__updateTree(rootNode, letter[1], letter[0])
         return rootNode
 
@@ -187,15 +178,11 @@ class Coder:
 
     # Gaunam žodyna koki simboli i koki uzkoduoti. Tai diction[a] - gaunam kaip uzkoduotas a
     def __getLettersDictionary(self, uniqueSymbolsWithFreqs):
-        #uniqueSymbols = self.__getUniqueLettersInWord()
-        # print(uniqueSymbols)
         symbolsList = self.__splitListOfSymbolsToListOfSymbolsList(uniqueSymbolsWithFreqs)
         if len(symbolsList) == 1:
             diction = self.__createDictionaryForSymbols(symbolsList, "0", {})
         else:
             diction = self.__createDictionaryForSymbols(symbolsList, "", {})
-        # print("dict dydis")
-        # print(len(diction))
         return diction
 
     # Jei turim lista [a,b,c,d], tai verciam i [[a],[b],[c],[d]]
@@ -210,17 +197,13 @@ class Coder:
     def __createDictionaryForSymbols(self, symbolsList, currentSeq, diction):
         if len(symbolsList) == 1:
             diction[((symbolsList[0])[0])[0]] = bitarray(currentSeq)
-            # print(len(currentSeq))
-            # print("key: %s, value: %s" % (((symbolsList[0])[0])[0], currentSeq))
             return diction
         minHeap = self.__createHeap(symbolsList)
-        # print("recLimit %d" % (sys.getrecursionlimit()))
         while len(minHeap) != 2:
             # 2 mažiausius bucketus apjungiam i viena bucketa. Jei turim [[a],[b],[c],[d]] verciam i [[a], [b], [c,d]]
             minHeap = self.__merge2LeastBucketsIntoOne(minHeap)
             # symbolsList = self.__merge2LeastBucketsIntoOne(symbolsList)
         # Po loopo gaunam lista kuriame yra du itemai, pvz [[a, c, h, ...], [b, d, e, ...]]
-        # symbolsList = self.__sortDescending(symbolsList)
         leftList = self.__splitListOfSymbolsToListOfSymbolsList(heappop(minHeap)[1])
         currentSeq = currentSeq + "0"
         diction = self.__createDictionaryForSymbols(leftList, currentSeq, diction)
@@ -228,7 +211,6 @@ class Coder:
         rightList = self.__splitListOfSymbolsToListOfSymbolsList(heappop(minHeap)[1])
         currentSeq = currentSeq + "1"
         diction = self.__createDictionaryForSymbols(rightList, currentSeq, diction)
-
         return diction
 
     def __createHeap(self, symbolsList):
@@ -254,19 +236,3 @@ class Coder:
             totalValue = totalValue + item[1]
         return totalValue
 
-    # Gaunam lista unikaliu raidziu ir ju daznius [['00001', 1534], [...], ...]
-    def __getUniqueLettersInWord(self):
-        i = 0
-        length = len(self.word)
-        dict = {}
-        while i < length:
-            letter = self.word[i:i + self.letterLength]
-            if letter.to01() in dict:
-                dict[letter.to01()] += 1
-            else:
-                dict[letter.to01()] = 1
-            i += len(letter)
-        dictList = []
-        for key, value in dict.items():
-            dictList.append([key, value])
-        return dictList

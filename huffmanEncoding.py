@@ -12,9 +12,11 @@ fileOut = 'encoded'
 if len(sys.argv) > 1:
     letterLength = int(sys.argv[1])
 if len(sys.argv) > 2:
-    fileIn = sys.argv[2]
+    unitLength = int(sys.argv[2])
 if len(sys.argv) > 3:
-    fileOut = sys.argv[3]
+    fileIn = sys.argv[3]
+if len(sys.argv) > 4:
+    fileOut = sys.argv[4]
 
 sys.setrecursionlimit(10000)
 # Nuskaitom norima uzkoduoti faila

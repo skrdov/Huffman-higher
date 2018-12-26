@@ -51,7 +51,7 @@ class CodeReader:
         f.seek(seekCount)
         uniqueLetterUnitsBytes = f.read(bytesForUniqueLetterUnits)
         uniqueLetterUnits = self.__int_from_bytes(uniqueLetterUnitsBytes)
-        print(uniqueLetterUnits)
+        #print(uniqueLetterUnits)
         
         firstLettersUnitBytesToRead = self.__getBytesAmountToRead(self.unitLength * self.letterLength)
         seekCount += bytesForUniqueLetterUnits
@@ -59,36 +59,35 @@ class CodeReader:
         firstLettersUnit = bitarray()
         firstLettersUnit.frombytes(firstLettersUnitBytes)
         firstLettersUnit = firstLettersUnit[:self.unitLength * self.letterLength]
-        print(firstLettersUnit)
+        #print(firstLettersUnit)
         
         # Skaitom  kodavimo/dekodavimo taisykles
         seekCount += firstLettersUnitBytesToRead
         f.seek(seekCount)
         
-        treeEncodedWordBitsinBytes = f.read()
-        treeEncodedWordBits = bitarray()
-        treeEncodedWordBits.frombytes(treeEncodedWordBitsinBytes)
+        treeAndEncodedWordBitsinBytes = f.read()
+        treeAndEncodedWordBits = bitarray()
+        treeAndEncodedWordBits.frombytes(treeAndEncodedWordBitsinBytes)
         
-        #encodedTextBits, dict = self.__extractEncodingDecodingRules(treeEncodedWordBits)
-        encodedTextBits, dict = self.__getDictionaryOfDictionaries(treeEncodedWordBits, uniqueLetterUnits)
+        encodedWordWithTrashBits, dict = self.__getDictionaryOfDictionaries(treeAndEncodedWordBits, uniqueLetterUnits)
         
-        encodedTextBits = self.__filterCodedWordAdditionalBits(encodedTextBits, trashBitsLength)
-        print(len(encodedTextBits))
+        encodedWord = self.__filterCodedWordAdditionalBits(encodedWordWithTrashBits, trashBitsLength)
+        #print(len(encodedWord))
+        #print(encodedWord[-70:])
         self.rulesFromEncoder = DecodingRules(dict, self.letterLength, self.unitLength, firstLettersUnit)
-        self.encodedData = EncodedData(encodedTextBits, suffixBits)
+        self.encodedData = EncodedData(encodedWord, suffixBits)
     def __getDictionaryOfDictionaries(self, bits, lettersCount):
         dict = {}
         bitsToTake = self.letterLength * self.unitLength
         i = 0
         while i < lettersCount:
-            #print("%d is %d" % (i, lettersCount))
+            print("%d is %d" % (i, lettersCount))
             lettersUnit = bits[:bitsToTake]
-            saveas = bits
             bits, currentLettersDict = self.__extractEncodingDecodingRules(bits[bitsToTake:])
             dict[lettersUnit.to01()] = currentLettersDict
             i += 1
         print("end")
-        print(len(dict))
+        #print(len(dict))
         return bits, dict
     #return rules dictionary and bits that are left
     def __extractEncodingDecodingRules(self, bits):
