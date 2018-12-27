@@ -7,25 +7,21 @@ class CodeWriter:
         self.encodedData = encodedData
 
     def writeToFile(self, fileName):
-        # Rasom: 3 bitai pasako kiek uzkoduotam zodyje yra nereikalingu bituku, tam kad uzkoduotas zodis tilptu i pilna baita. + 5 bitai pasako kiek bitu liko neuzkoduotu
-        # Gaunam kiek bitu nuskaityti neuzkoduotai galunei
-        # Rasom neuzkoduota galune
-        # Rasom medi
-        # Rasom viska iki galo - uzkoduota zodi
         treeBitsDictionary = self.encodingRules.getTreeBits()
-        #------------------------------
-        treeBitsToWrite = self.__convertToSuitableFormat(treeBitsDictionary)
-        #------------------------------
+        treeBitsToWrite = self.__convertToOneBitarray(treeBitsDictionary)
         
         suffixBits = self.encodedData.getSuffixBits()
         suffixBitsBytes = self.__getBytesFromNonFullBits(suffixBits)
         
+        #raides ilgi ir unit ilgi galim apjungti i viena baita
         letterLength = self.encodingRules.getLetterLength()
         letterLengthByte = self.__int_to_bytes(letterLength)
         
         unitLength = self.encodingRules.getUnitLength()
         unitLengthByte = self.__int_to_bytes(unitLength)
         
+        #Tam kad zinotume kiek dictionary (pvz a:{a:0, b:10, ...}) reiks nuskaityti decodinant (tam kad nepradeti skaityti uzkoduoto zodzio kaip naujo 
+        #medzio). O gal galima kitaip padaryti?
         uniqueLetterUnits = len(treeBitsDictionary)
         uniqueLetterUnitsBytes = self.__int_to_bytes(uniqueLetterUnits)
         
@@ -33,21 +29,13 @@ class CodeWriter:
         bytesForUniqueLetterUnitsByte = self.__int_to_bytes(bytesForUniqueLetterUnits)
         #print(uniqueLetterUnits)
         
-        #print(treeBitsDictionary)
+        #print(uniqueLetterUnits)
         encodedWord = self.encodedData.getEncodedWord()
-        #print(len(encodedWord))
-        #print(len(treeBitsDictionary))
-        
         
         treeRulesPlusEncodedWord = bitarray()
         treeRulesPlusEncodedWord.extend(treeBitsToWrite)
         treeRulesPlusEncodedWord.extend(encodedWord)
         
-        #print("encoded word")
-        print(len(encodedWord))
-        print(encodedWord[-70:])
-        #print('aa')
-        #print(len(treeRulesPlusEncodedWord))
         trashAndSuffixBitsLengthByte = self.__getTrashAndSuffixBitsLengthByte(len(treeRulesPlusEncodedWord), len(suffixBits))
         treeRulesPlusEncodedWordBytes = self.__addBitsToCompleteLastByte(treeRulesPlusEncodedWord)
 
@@ -66,7 +54,7 @@ class CodeWriter:
         f.write(treeRulesPlusEncodedWordBytes)
         f.close()
         #print(len(treeRulesPlusEncodedWordBytes))
-    def __convertToSuitableFormat(self, treeBitsDictionary):
+    def __convertToOneBitarray(self, treeBitsDictionary):
         wholeStretch = bitarray()
         for item in treeBitsDictionary.items():
             currentStretch = bitarray(item[0])
@@ -76,8 +64,6 @@ class CodeWriter:
         
     def __getTrashAndSuffixBitsLengthByte(self, encodedWordLength, suffixBitsLength):
         if encodedWordLength % 8 == 0:
-            print(encodedWordLength)
-            print('liekanaaaa')
             value1 = 0
         else:
             value1 = (8 - (encodedWordLength % 8)) << 5

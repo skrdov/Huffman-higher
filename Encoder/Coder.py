@@ -22,17 +22,17 @@ class Coder:
             
         #gaunam pvz:. {a:{a:00, b:01, ..}, b:{c:0}, c:{a:0, b:10, c:11000, ...}, ...}
         self.dictionaryOfDictionaries = self.__getEncodedLettersForDictionaryOfDictionaries()
-        print('diction')
-        print(len(self.dictionaryOfDictionaries))
+        #print('diction')
+        #print(len(self.dictionaryOfDictionaries))
 
     def __getEncodedLettersForDictionaryOfDictionaries(self):
         #Gaunam pvz:. {a:{a:2kartai, b:5kartai, ..}, b:{c:100kartu}, c:{a:1kartas, b:3kartai, c:5kartai, ...}, ...}
         dictionaryOfDictionaries = self.__getDictionaryOfDictionariesLettersFrequencies()
-        #Konvertuojam i listus, tam kad 
+        #Konvertuojam i listus, tam kad veliau galetume sudarineti kodus raidems
         dictionaryOfLists = self.__convertToDictionaryOfLists(dictionaryOfDictionaries)
         for key in dictionaryOfLists:
             uniqueSymbolsWithFreqs = dictionaryOfLists[key]
-            #čia pasiemam konkrecias uzkodavimo taisykles, pvz:. dictionaryOfDictionaries['c'] = {a:0, b:10, c:11000, ...}
+            #iš čia gaunam konkrecias uzkodavimo taisykles, pvz:. dictionaryOfDictionaries['c'] = {a:0, b:10, c:11000, ...}
             #Tiesiogiai nesusije su metodu apacioj, bet:
             #Kai noresim uzkoduoti sekancia raide (einamuoju metu yra tarkim 'c' raide) darom dictionaryOfDictionaries['c'] ir gausim {a:0, b:10, c:11000, ...}
             #Tada jei raide bus b, rasysim 10 ir tada pasiimsim dictionaryOfDictionaries['b'] ir koduosim kita raide pagal sita zodyna
@@ -50,7 +50,7 @@ class Coder:
         dictionaryOfDictionaries = {}
         bitsToTake = self.letterLength * self.unitLength
         i = 0
-        #pvz kai unit=2 imam ab, ziurim kokia sekanti pora (tarkim) ac, pagal tai pildom daznius
+        #pvz kai unit=2 imam 'ab', ziurim kokia sekanti pora (tarkim) 'ac', pagal tai pildom daznius
         while i < len(self.word) - bitsToTake:
             lettersUnit = self.word[i:i+bitsToTake]
             if lettersUnit.to01() not in dictionaryOfDictionaries:
@@ -106,7 +106,9 @@ class Coder:
             for elem in innerDict.items():
                 listOfItems.append(elem)
             rootsDictionary[item[0]] = self.__createTree(listOfItems)
-            treeBits = self.__getEncodingDecodingRules(rootsDictionary[item[0]])
+            treeBits = self.__getEncodingRulesForCertainLettersUnit(rootsDictionary[item[0]])
+            #Jei zodyne tera viena raide pvz a: {b:0}, tai medis lieka neuzpildytas (lieka bitukas '1' tuscias). Tai cia darom taip, kad tinkamai galetu dekoduoti,
+            #nebeieskant '1' po to kai dekuoduotas '0'
             treeBits = self.__convertToSuitableFormat(treeBits)
             #print(len(treeBits))
             treeBitsDict[item[0]] = treeBits
@@ -121,7 +123,7 @@ class Coder:
         return treeBits
         
     # Gaunam taisykles. Pvz:. 1110a110b... -> a dekoduojama i 000
-    def __getEncodingDecodingRules(self, node):
+    def __getEncodingRulesForCertainLettersUnit(self, node):
         str = bitarray()
         if node.getLetter() == '':
             str.append(True)
@@ -130,9 +132,9 @@ class Coder:
             #print(node.getLetter())
             str.extend(node.getLetter())
         if node.leftChild is not None:
-            str.extend(self.__getEncodingDecodingRules(node.leftChild))
+            str.extend(self.__getEncodingRulesForCertainLettersUnit(node.leftChild))
         if node.rightChild is not None:
-            str.extend(self.__getEncodingDecodingRules(node.rightChild))
+            str.extend(self.__getEncodingRulesForCertainLettersUnit(node.rightChild))
         return str
 
     def __createTree(self, uniqueLetters):

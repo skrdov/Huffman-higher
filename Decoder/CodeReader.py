@@ -81,7 +81,7 @@ class CodeReader:
         bitsToTake = self.letterLength * self.unitLength
         i = 0
         while i < lettersCount:
-            print("%d is %d" % (i, lettersCount))
+            #print("%d is %d" % (i, lettersCount))
             lettersUnit = bits[:bitsToTake]
             bits, currentLettersDict = self.__extractEncodingDecodingRules(bits[bitsToTake:])
             dict[lettersUnit.to01()] = currentLettersDict
