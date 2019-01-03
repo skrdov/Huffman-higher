@@ -45,7 +45,7 @@ class CodeReader:
         f.seek(seekCount)
         bytesForUniqueLetterUnitsByte = f.read(1)
         bytesForUniqueLetterUnits = self.__int_from_bytes(bytesForUniqueLetterUnitsByte)
-       
+        #print(bytesForUniqueLetterUnits)
         
         seekCount += 1
         f.seek(seekCount)
@@ -68,7 +68,6 @@ class CodeReader:
         treeAndEncodedWordBitsinBytes = f.read()
         treeAndEncodedWordBits = bitarray()
         treeAndEncodedWordBits.frombytes(treeAndEncodedWordBitsinBytes)
-        
         encodedWordWithTrashBits, dict = self.__getDictionaryOfDictionaries(treeAndEncodedWordBits, uniqueLetterUnits)
         
         encodedWord = self.__filterCodedWordAdditionalBits(encodedWordWithTrashBits, trashBitsLength)
@@ -80,21 +79,19 @@ class CodeReader:
         dict = {}
         bitsToTake = self.letterLength * self.unitLength
         i = 0
+        
         while i < lettersCount:
-            #print("%d is %d" % (i, lettersCount))
+            #print("%d of %d" % (i, lettersCount))
             lettersUnit = bits[:bitsToTake]
             bits, currentLettersDict = self.__extractEncodingDecodingRules(bits[bitsToTake:])
             dict[lettersUnit.to01()] = currentLettersDict
             i += 1
-        print("end")
-        #print(len(dict))
         return bits, dict
     #return rules dictionary and bits that are left
     def __extractEncodingDecodingRules(self, bits):
         dict = {}
         currentSeq = bitarray()
         leftBits, dict = self.__getEncodingDecodingDictionary(bits, dict, currentSeq)
-        #print(leftBits[:25])
         return leftBits, dict
     def __getEncodingDecodingDictionary(self, bits, dict, currentSeq):
         if bits[0] == 0:

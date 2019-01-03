@@ -11,8 +11,8 @@ class CodeWriter:
         treeBitsToWrite = self.__convertToOneBitarray(treeBitsDictionary)
         
         suffixBits = self.encodedData.getSuffixBits()
-        suffixBitsBytes = self.__getBytesFromNonFullBits(suffixBits)
-        
+        suffixBitsBytes = self.__getBytesFromNonFullBits(suffixBits) 
+
         #raides ilgi ir unit ilgi galim apjungti i viena baita
         letterLength = self.encodingRules.getLetterLength()
         letterLengthByte = self.__int_to_bytes(letterLength)
@@ -24,8 +24,10 @@ class CodeWriter:
         #medzio). O gal galima kitaip padaryti?
         uniqueLetterUnits = len(treeBitsDictionary)
         uniqueLetterUnitsBytes = self.__int_to_bytes(uniqueLetterUnits)
+        #print(uniqueLetterUnits)
         
         bytesForUniqueLetterUnits = len(uniqueLetterUnitsBytes)
+        #print(bytesForUniqueLetterUnits)
         bytesForUniqueLetterUnitsByte = self.__int_to_bytes(bytesForUniqueLetterUnits)
         #print(uniqueLetterUnits)
         
@@ -35,7 +37,7 @@ class CodeWriter:
         treeRulesPlusEncodedWord = bitarray()
         treeRulesPlusEncodedWord.extend(treeBitsToWrite)
         treeRulesPlusEncodedWord.extend(encodedWord)
-        
+        #print(len(encodedWord))
         trashAndSuffixBitsLengthByte = self.__getTrashAndSuffixBitsLengthByte(len(treeRulesPlusEncodedWord), len(suffixBits))
         treeRulesPlusEncodedWordBytes = self.__addBitsToCompleteLastByte(treeRulesPlusEncodedWord)
 
@@ -56,10 +58,17 @@ class CodeWriter:
         #print(len(treeRulesPlusEncodedWordBytes))
     def __convertToOneBitarray(self, treeBitsDictionary):
         wholeStretch = bitarray()
+        bitCounter = 0
+        letterCount = 0
+        detailsDict = {}
         for item in treeBitsDictionary.items():
             currentStretch = bitarray(item[0])
             currentStretch.extend(item[1])
+            detailsDict[letterCount] = bitCounter
+            bitCounter += (len(item[1]) + len(item[0]))
+            letterCount += 1
             wholeStretch.extend(currentStretch)
+        
         return wholeStretch
         
     def __getTrashAndSuffixBitsLengthByte(self, encodedWordLength, suffixBitsLength):
@@ -71,12 +80,14 @@ class CodeWriter:
 
     # Gaunam baitus, is bitu sekos kurios liekana != 0 (uzpildom vienetukais gala)
     def __getBytesFromNonFullBits(self, bits):
+        #newBits = bitarray()
+        newBits = bits.copy()
         # Gaunam kiek bitu reikia kad uzpildytume baita
         bitsToAdd = self.__bitsToGetFullByte(len(bits))
         # Prijungiam bitukas, kad gautume pilna baita
-        bits.extend(self.__addBitsToCompleteByte(bitsToAdd))
+        newBits.extend(self.__addBitsToCompleteByte(bitsToAdd))
         # Verciam i baitus
-        return bits.tobytes()
+        return newBits.tobytes()
 
     def __addBitsToCompleteByte(self, bitsToAdd):
         bits = []

@@ -22,8 +22,6 @@ class Coder:
             
         #gaunam pvz:. {a:{a:00, b:01, ..}, b:{c:0}, c:{a:0, b:10, c:11000, ...}, ...}
         self.dictionaryOfDictionaries = self.__getEncodedLettersForDictionaryOfDictionaries()
-        #print('diction')
-        #print(len(self.dictionaryOfDictionaries))
 
     def __getEncodedLettersForDictionaryOfDictionaries(self):
         #Gaunam pvz:. {a:{a:2kartai, b:5kartai, ..}, b:{c:100kartu}, c:{a:1kartas, b:3kartai, c:5kartai, ...}, ...}
@@ -88,10 +86,9 @@ class Coder:
         return dictList
         
     def __getSuffixBits(self):
-        suffixBitsLength = len(self.word) % self.letterLength
+        suffixBitsLength = len(self.word) % (self.letterLength * self.unitLength)
         if suffixBitsLength == 0:
             return bitarray(), self.word
-        # print(suffixBitsLength)
         suffixBits = self.word[len(self.word) - suffixBitsLength:len(self.word)]
         return suffixBits, self.word[:len(self.word) - suffixBitsLength]
 
