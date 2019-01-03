@@ -158,7 +158,7 @@ class Coder:
 
     def getEncodedData(self):
         encodedWord = bitarray()
-        encodedWord.append(False)
+        #encodedWord.append(False)
         bitsToRead = self.letterLength * self.unitLength
         currentUnit = self.word[0:bitsToRead]
         currentDictionary = self.dictionaryOfDictionaries[currentUnit.to01()]

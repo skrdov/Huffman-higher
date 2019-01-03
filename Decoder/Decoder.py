@@ -25,7 +25,6 @@ class Decoder:
         dictionaryOfDictionaries = self.decodingDictionary
         decodedWord = bitarray()
         currentDecodedLettersUnit = self.decodingRules.getFirstLettersUnit()
-        encodedWord = encodedWord[1:]
         decodedWord.extend(currentDecodedLettersUnit)
         temp = bitarray()
         i = 0
@@ -48,9 +47,6 @@ class Decoder:
         if bits[0] == 0:
             self.decodingDictionary[buildingBits.to01()] = letters[0]
             # print("key: %s, value: %s" % (letters[0].to01(), buildingBits.to01()))
-            # print(self.decodingDictionary[''])
-            # print(buildingBits.to01())
-            # print(letters[0])
             return bits[1:], letters[1:]
         elif bits[0] == 1:
             if len(bits) > 1:

@@ -40,11 +40,7 @@ class CodeWriter:
         #print(len(encodedWord))
         trashAndSuffixBitsLengthByte = self.__getTrashAndSuffixBitsLengthByte(len(treeRulesPlusEncodedWord), len(suffixBits))
         treeRulesPlusEncodedWordBytes = self.__addBitsToCompleteLastByte(treeRulesPlusEncodedWord)
-
-        firstLettersUnit = self.encodingRules.getFirstLettersUnit()
-        firstLettersUnitBytes = firstLettersUnit.tobytes()
-        #print(firstLettersUnit)
-        
+   
         f = open(fileName, 'wb')
         f.write(trashAndSuffixBitsLengthByte)
         f.write(letterLengthByte)
@@ -52,7 +48,6 @@ class CodeWriter:
         f.write(suffixBitsBytes)
         f.write(bytesForUniqueLetterUnitsByte)
         f.write(uniqueLetterUnitsBytes)
-        f.write(firstLettersUnitBytes)
         f.write(treeRulesPlusEncodedWordBytes)
         f.close()
         #print(len(treeRulesPlusEncodedWordBytes))

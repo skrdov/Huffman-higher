@@ -46,28 +46,21 @@ class CodeReader:
         bytesForUniqueLetterUnitsByte = f.read(1)
         bytesForUniqueLetterUnits = self.__int_from_bytes(bytesForUniqueLetterUnitsByte)
         #print(bytesForUniqueLetterUnits)
-        
+             
         seekCount += 1
         f.seek(seekCount)
         uniqueLetterUnitsBytes = f.read(bytesForUniqueLetterUnits)
         uniqueLetterUnits = self.__int_from_bytes(uniqueLetterUnitsBytes)
-        #print(uniqueLetterUnits)
-        
-        firstLettersUnitBytesToRead = self.__getBytesAmountToRead(self.unitLength * self.letterLength)
-        seekCount += bytesForUniqueLetterUnits
-        firstLettersUnitBytes = f.read(firstLettersUnitBytesToRead)
-        firstLettersUnit = bitarray()
-        firstLettersUnit.frombytes(firstLettersUnitBytes)
-        firstLettersUnit = firstLettersUnit[:self.unitLength * self.letterLength]
-        #print(firstLettersUnit)
-        
+
         # Skaitom  kodavimo/dekodavimo taisykles
-        seekCount += firstLettersUnitBytesToRead
+        seekCount += bytesForUniqueLetterUnits#firstLettersUnitBytesToRead
         f.seek(seekCount)
         
         treeAndEncodedWordBitsinBytes = f.read()
         treeAndEncodedWordBits = bitarray()
         treeAndEncodedWordBits.frombytes(treeAndEncodedWordBitsinBytes)
+        firstLettersUnit = treeAndEncodedWordBits[:self.letterLength * self.unitLength]
+        #print(firstLettersUnit)
         encodedWordWithTrashBits, dict = self.__getDictionaryOfDictionaries(treeAndEncodedWordBits, uniqueLetterUnits)
         
         encodedWord = self.__filterCodedWordAdditionalBits(encodedWordWithTrashBits, trashBitsLength)
