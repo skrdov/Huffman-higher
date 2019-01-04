@@ -44,7 +44,6 @@ class Coder:
         return dictionaryOfDictionaries
         
     def __getDictionaryOfDictionariesLettersFrequencies(self):
-        uniqueLettersUnits = self.__getUniqueLetterUnitsInWord(self.word)
         dictionaryOfDictionaries = {}
         bitsToTake = self.letterLength * self.unitLength
         i = 0
@@ -68,23 +67,6 @@ class Coder:
             list.append([key, value])
         return list
         
-    def __getUniqueLetterUnitsInWord(self, word):
-        i = 0
-        length = len(word)
-        dict = {}
-        letterUnitBitsSize = self.letterLength * self.unitLength
-        while i < length:
-            letter = word[i:i+letterUnitBitsSize]
-            if letter.to01() in dict:
-                dict[letter.to01()] += 1
-            else:
-                dict[letter.to01()] = 1
-            i += letterUnitBitsSize
-        dictList = []
-        for key, value in dict.items():
-            dictList.append(key)
-        return dictList
-        
     def __getSuffixBits(self):
         suffixBitsLength = len(self.word) % (self.letterLength * self.unitLength)
         if suffixBitsLength == 0:
@@ -95,7 +77,6 @@ class Coder:
     def getEncodingRules(self):
         rootsDictionary = {}
         treeBitsDict = {}
-        lettersDict = {}
         for item in self.dictionaryOfDictionaries.items():
             dict = item[0]
             innerDict = self.dictionaryOfDictionaries[dict]
@@ -109,7 +90,7 @@ class Coder:
             treeBits = self.__convertToSuitableFormat(treeBits)
             #print(len(treeBits))
             treeBitsDict[item[0]] = treeBits
-            firstLettersUnit = self.word[:self.letterLength*self.unitLength]
+        firstLettersUnit = self.word[:self.letterLength*self.unitLength]
         encodingRules = EncodingRules(treeBitsDict, self.letterLength, self.unitLength, len(self.dictionaryOfDictionaries), firstLettersUnit)
         return encodingRules
         
