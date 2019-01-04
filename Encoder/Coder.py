@@ -90,7 +90,7 @@ class Coder:
             treeBits = self.__convertToSuitableFormat(treeBits)
             #print(len(treeBits))
             treeBitsDict[item[0]] = treeBits
-            firstLettersUnit = self.word[:self.letterLength*self.unitLength]
+        firstLettersUnit = self.word[:self.letterLength*self.unitLength]
         encodingRules = EncodingRules(treeBitsDict, self.letterLength, self.unitLength, len(self.dictionaryOfDictionaries), firstLettersUnit)
         return encodingRules
         
