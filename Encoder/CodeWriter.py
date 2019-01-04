@@ -50,7 +50,6 @@ class CodeWriter:
         f.write(uniqueLetterUnitsBytes)
         f.write(treeRulesPlusEncodedWordBytes)
         f.close()
-        #print(len(treeRulesPlusEncodedWordBytes))
     def __convertToOneBitarray(self, treeBitsDictionary):
         wholeStretch = bitarray()
         bitCounter = 0

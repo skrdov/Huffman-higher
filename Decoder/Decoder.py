@@ -24,16 +24,20 @@ class Decoder:
         encodedWord = self.encodedWord
         dictionaryOfDictionaries = self.decodingDictionary
         decodedWord = bitarray()
-        currentDecodedLettersUnit = self.decodingRules.getFirstLettersUnit()
-        decodedWord.extend(currentDecodedLettersUnit)
+        currentLettersUnit = self.decodingRules.getFirstLettersUnit()
+        letterXunitLength = self.decodingRules.getLetterLength() * self.decodingRules.getUnitLength()
+
+        decodedWord.extend(currentLettersUnit)
         temp = bitarray()
         i = 0
+        currentDictionary = dictionaryOfDictionaries[currentLettersUnit.to01()]
         while i < len(encodedWord):
-            currentDictionary = dictionaryOfDictionaries[currentDecodedLettersUnit.to01()]
             temp.append(encodedWord[i])
             if self.__isEncodedLetter(currentDictionary, temp):
-                currentDecodedLettersUnit = currentDictionary[temp.to01()]
-                decodedWord.extend(currentDecodedLettersUnit)
+                currentDecodedLetter = currentDictionary[temp.to01()]
+                decodedWord.extend(currentDecodedLetter)
+                currentLettersUnit = decodedWord[-letterXunitLength:]
+                currentDictionary = dictionaryOfDictionaries[currentLettersUnit.to01()]
                 temp = bitarray()
             i += 1
         return decodedWord

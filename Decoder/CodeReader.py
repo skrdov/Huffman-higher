@@ -61,11 +61,11 @@ class CodeReader:
         treeAndEncodedWordBits.frombytes(treeAndEncodedWordBitsinBytes)
         firstLettersUnit = treeAndEncodedWordBits[:self.letterLength * self.unitLength]
         #print(firstLettersUnit)
+        #print(uniqueLetterUnits)
         encodedWordWithTrashBits, dict = self.__getDictionaryOfDictionaries(treeAndEncodedWordBits, uniqueLetterUnits)
         
         encodedWord = self.__filterCodedWordAdditionalBits(encodedWordWithTrashBits, trashBitsLength)
-        #print(len(encodedWord))
-        #print(encodedWord[-70:])
+
         self.rulesFromEncoder = DecodingRules(dict, self.letterLength, self.unitLength, firstLettersUnit)
         self.encodedData = EncodedData(encodedWord, suffixBits)
     def __getDictionaryOfDictionaries(self, bits, lettersCount):
@@ -76,6 +76,7 @@ class CodeReader:
         while i < lettersCount:
             #print("%d of %d" % (i, lettersCount))
             lettersUnit = bits[:bitsToTake]
+            #print(lettersUnit)
             bits, currentLettersDict = self.__extractEncodingDecodingRules(bits[bitsToTake:])
             dict[lettersUnit.to01()] = currentLettersDict
             i += 1
@@ -88,10 +89,10 @@ class CodeReader:
         return leftBits, dict
     def __getEncodingDecodingDictionary(self, bits, dict, currentSeq):
         if bits[0] == 0:
-            dict[currentSeq.to01()] = bits[1:1+self.letterLength*self.unitLength]
+            dict[currentSeq.to01()] = bits[1:1+self.letterLength]
             if len(currentSeq) == 0:
-                dict['0'] = bits[1:1+self.letterLength*self.unitLength]
-            return bits[1+self.letterLength*self.unitLength:], dict
+                dict['0'] = bits[1:1+self.letterLength]
+            return bits[1+self.letterLength:], dict
         elif bits[0] == 1:
             del bits[0]
             currentSeq.append(False)

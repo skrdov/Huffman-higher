@@ -15,8 +15,12 @@ class Coder:
         self.unitLength = unitLength
         self.lettersDictionary = {}
         # Bitai kurie nebeiejo i raide. Pvz:. jei k = 4 ir turim žodį: 010110, tai 0101 bus viena raidė, o galune 10 nebesudarys raides
+        #print('worksss')
+        #print(self.word[:16])
         self.suffixBits = bitarray()
         self.suffixBits, self.word = self.__getSuffixBits()
+        #print(len(self.word))
+        #print('worksss222')
         if len(self.word) < 1:
             raise Exception('Ivesties failas negali buti mazesnis nei koduojamo zodzio ilgis')
             
@@ -48,17 +52,18 @@ class Coder:
         bitsToTake = self.letterLength * self.unitLength
         i = 0
         #pvz kai unit=2 imam 'ab', ziurim kokia sekanti pora (tarkim) 'ac', pagal tai pildom daznius
-        while i < len(self.word) - bitsToTake:
+        while i <= len(self.word) - bitsToTake - self.letterLength:
             lettersUnit = self.word[i:i+bitsToTake]
             if lettersUnit.to01() not in dictionaryOfDictionaries:
                 dictionaryOfDictionaries[lettersUnit.to01()] = {}
             lettersDictionary = dictionaryOfDictionaries[lettersUnit.to01()]
-            nextLettersUnit = self.word[i+bitsToTake:i+2*bitsToTake]
-            if nextLettersUnit.to01() in lettersDictionary:
-                lettersDictionary[nextLettersUnit.to01()] += 1
+            nextLetter = self.word[i+bitsToTake:i+bitsToTake+self.letterLength]
+            if nextLetter.to01() in lettersDictionary:
+                lettersDictionary[nextLetter.to01()] += 1
             else:
-                lettersDictionary[nextLettersUnit.to01()] = 1
-            i += bitsToTake
+                lettersDictionary[nextLetter.to01()] = 1
+            i += self.letterLength
+
         return dictionaryOfDictionaries
     
     def __getListItem(self, dict):
@@ -68,7 +73,7 @@ class Coder:
         return list
         
     def __getSuffixBits(self):
-        suffixBitsLength = len(self.word) % (self.letterLength * self.unitLength)
+        suffixBitsLength = len(self.word) % (self.letterLength)
         if suffixBitsLength == 0:
             return bitarray(), self.word
         suffixBits = self.word[len(self.word) - suffixBitsLength:len(self.word)]
@@ -95,8 +100,8 @@ class Coder:
         return encodingRules
         
     def __convertToSuitableFormat(self, treeBits):
-        lettersUnitLength = self.letterLength * self.unitLength
-        if len(treeBits) == 2 + lettersUnitLength:
+        #lettersUnitLength = self.letterLength * self.unitLength
+        if len(treeBits) == 2 + self.letterLength:
             del treeBits[0]
         return treeBits
         
@@ -140,17 +145,22 @@ class Coder:
     def getEncodedData(self):
         encodedWord = bitarray()
         #encodedWord.append(False)
+        #print(self.word[-30:])
         bitsToRead = self.letterLength * self.unitLength
-        currentUnit = self.word[0:bitsToRead]
-        currentDictionary = self.dictionaryOfDictionaries[currentUnit.to01()]
-        i = bitsToRead
-        while i < len(self.word):
+        
+        i = 0
+        while i <= len(self.word) - bitsToRead - self.letterLength:
+            #print(i)
             currentUnit = self.word[i:i+bitsToRead]
-            encodedUnit = currentDictionary[currentUnit.to01()]
-            encodedWord.extend(encodedUnit)
-            if i + bitsToRead < len(self.word):
+            currentDictionary = self.dictionaryOfDictionaries[currentUnit.to01()]
+            nextLetter = self.word[i+bitsToRead:i+bitsToRead+self.letterLength]
+            #print(currentUnit.to01())
+            encodedLetter = currentDictionary[nextLetter.to01()]
+            encodedWord.extend(encodedLetter)
+            
+            if i + self.letterLength < len(self.word):
                 currentDictionary = self.dictionaryOfDictionaries[currentUnit.to01()]
-            i += bitsToRead
+            i += self.letterLength
         return EncodedData(encodedWord, self.suffixBits)
 
     def __getEncodedLetter(self, letter):
