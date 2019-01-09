@@ -1,4 +1,5 @@
 from bitarray import bitarray
+from collections import deque
 
 from Model.EncodedData import EncodedData
 from Model.EncodingRules import EncodingRules
@@ -69,18 +70,19 @@ class CodeReader:
         self.rulesFromEncoder = DecodingRules(dict, self.letterLength, self.unitLength, firstLettersUnit)
         self.encodedData = EncodedData(encodedWord, suffixBits)
     def __getDictionaryOfDictionaries(self, bits, lettersCount):
+        bits = deque(bits)
         dict = {}
         bitsToTake = self.letterLength * self.unitLength
         i = 0
         
         while i < lettersCount:
             #print("%d of %d" % (i, lettersCount))
-            lettersUnit = bits[:bitsToTake]
+            lettersUnit = bitarray(self.__pop_deque_left(bits, bitsToTake))
             #print(lettersUnit)
-            bits, currentLettersDict = self.__extractEncodingDecodingRules(bits[bitsToTake:])
+            bits, currentLettersDict = self.__extractEncodingDecodingRules(bits)
             dict[lettersUnit.to01()] = currentLettersDict
             i += 1
-        return bits, dict
+        return bitarray(bits), dict
     #return rules dictionary and bits that are left
     def __extractEncodingDecodingRules(self, bits):
         dict = {}
@@ -89,12 +91,14 @@ class CodeReader:
         return leftBits, dict
     def __getEncodingDecodingDictionary(self, bits, dict, currentSeq):
         if bits[0] == 0:
-            dict[currentSeq.to01()] = bits[1:1+self.letterLength]
+            bits.popleft()
+            letter = self.__pop_deque_left(bits, self.letterLength)
+            dict[currentSeq.to01()] = letter
             if len(currentSeq) == 0:
-                dict['0'] = bits[1:1+self.letterLength]
-            return bits[1+self.letterLength:], dict
+                dict['0'] = letter
+            return bits, dict
         elif bits[0] == 1:
-            del bits[0]
+            bits.popleft()
             currentSeq.append(False)
             leftBits, dict = self.__getEncodingDecodingDictionary(bits, dict, currentSeq)
             currentSeq.pop()
@@ -159,3 +163,10 @@ class CodeReader:
 
     def __int_from_bytes(self, xbytes):
         return int.from_bytes(xbytes, 'big')
+
+    def __pop_deque_left(self, deq, count):
+        array = []
+        for i in range(0, count):
+            array.append(deq.popleft())
+
+        return array
