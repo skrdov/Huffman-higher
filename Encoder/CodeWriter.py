@@ -13,12 +13,10 @@ class CodeWriter:
         suffixBits = self.encodedData.getSuffixBits()
         suffixBitsBytes = self.__getBytesFromNonFullBits(suffixBits) 
 
-        #raides ilgi ir unit ilgi galim apjungti i viena baita
+        # 3 bitai unit ilgiui, 5 bitai raides ilgiui
         letterLength = self.encodingRules.getLetterLength()
-        letterLengthByte = self.__int_to_bytes(letterLength)
-        
         unitLength = self.encodingRules.getUnitLength()
-        unitLengthByte = self.__int_to_bytes(unitLength)
+        unitAndLetterLengthByte = self.__getUnitAndLetterLengthByte(unitLength, letterLength)
         
         #Tam kad zinotume kiek dictionary (pvz a:{a:0, b:10, ...}) reiks nuskaityti decodinant (tam kad nepradeti skaityti uzkoduoto zodzio kaip naujo 
         #medzio). O gal galima kitaip padaryti?
@@ -43,8 +41,7 @@ class CodeWriter:
    
         f = open(fileName, 'wb')
         f.write(trashAndSuffixBitsLengthByte)
-        f.write(letterLengthByte)
-        f.write(unitLengthByte)
+        f.write(unitAndLetterLengthByte)
         f.write(suffixBitsBytes)
         f.write(bytesForUniqueLetterUnitsByte)
         f.write(uniqueLetterUnitsBytes)
@@ -71,6 +68,9 @@ class CodeWriter:
         else:
             value1 = (8 - (encodedWordLength % 8)) << 5
         return self.__int_to_bytes(value1 + suffixBitsLength)
+
+    def __getUnitAndLetterLengthByte(self, unitLength, letterLength):
+        return self.__int_to_bytes((unitLength << 5) + letterLength)
 
     # Gaunam baitus, is bitu sekos kurios liekana != 0 (uzpildom vienetukais gala)
     def __getBytesFromNonFullBits(self, bits):

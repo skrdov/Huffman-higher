@@ -27,13 +27,8 @@ class CodeReader:
         # Skaitom koks raides ilgis bitukais originaliame žodyje
         seekCount = 1
         f.seek(seekCount)
-        letterLengthByte = f.read(1)
-        self.letterLength = self.__int_from_bytes(letterLengthByte)
-        
-        seekCount += 1
-        f.seek(seekCount)
-        unitLengthByte = f.read(1)
-        self.unitLength = self.__int_from_bytes(unitLengthByte)
+        unitAndLetterLengthByte = f.read(1)
+        self.unitLength, self.letterLength = self.__getUnitAndLetterBitsLength(unitAndLetterLengthByte)
 
         # Skaitom suffix bitukus (bitukai kurie nebuvo uzkoduoti, nes netilpo i ivesta raides ilgi)
         seekCount += 1
@@ -131,6 +126,17 @@ class CodeReader:
         suffixBitsSizeBits.setall(False)
         suffixBitsSizeBits[3:] = b[3:]
         return self.__int_from_bytes(trashBitsSizeBits.tobytes()), self.__int_from_bytes(suffixBitsSizeBits.tobytes())
+
+    def __getUnitAndLetterBitsLength(self, unitAndLetterLengthByte):
+        b = bitarray()
+        b.frombytes(unitAndLetterLengthByte)
+        unitBits = bitarray(8)
+        unitBits.setall(False)
+        unitBits[5:] = b[:3]
+        letterBits = bitarray(8)
+        letterBits.setall(False)
+        letterBits[3:] = b[3:]
+        return self.__int_from_bytes(unitBits.tobytes()), self.__int_from_bytes(letterBits.tobytes())
 
     def __chopToLetterInBitsList(self, allLettersInBitsSeq, letterLength, letterCount):
         totalBitsForLetters = letterLength * letterCount
