@@ -18,6 +18,12 @@ if len(sys.argv) > 3:
 if len(sys.argv) > 4:
     fileOut = sys.argv[4]
 
+if letterLength > 8:
+    raise Exception('Raides ilgis negali buti didesnis nei 8')
+
+if unitLength > 7:
+    raise Exception('Vieneto (unit) ilgis negali buti didesnis nei 7')
+
 sys.setrecursionlimit(10000)
 # Nuskaitom norima uzkoduoti faila
 f = open(fileIn, 'rb')
